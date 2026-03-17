@@ -302,5 +302,28 @@ namespace Parcial_2
             Assert.That(secondResult, Is.False);
             Assert.That(store.GetQuantity("Pocion", "Supply"), Is.EqualTo(0));
         }
+
+        private static IEnumerable<TestCaseData> ActualizacionInventarioJugadorData()
+        {
+            yield return new TestCaseData("Weapon", 1, 0, 1).SetName("caso_5_inventory_weapon");
+            yield return new TestCaseData("Armor", 1, 0, 1).SetName("caso_5_inventory_armor");
+            yield return new TestCaseData("Accessory", 1, 0, 1).SetName("caso_5_inventory_accessory");
+            yield return new TestCaseData("Supply", 0, 1, 1).SetName("caso_5_inventory_supply");
+        }
+
+        [TestCaseSource(nameof(ActualizacionInventarioJugadorData))]
+        public void caso_5_al_comprar_el_item_aparece_en_el_grupo_correcto_con_la_cantidad_correcta(string category, int expectedEquipmentCount, int expectedSupplyCount, int expectedQuantity)
+        {
+            Item item = new Item("ItemB", 10, category);
+            Store store = new Store(item, 3);
+            Player player = new Player(100);
+
+            bool result = store.BuyItem(player, "ItemB", category, 1);
+
+            Assert.That(result, Is.True);
+            Assert.That(player.Inventory.EquipmentCount, Is.EqualTo(expectedEquipmentCount));
+            Assert.That(player.Inventory.SupplyCount, Is.EqualTo(expectedSupplyCount));
+            Assert.That(player.Inventory.GetQuantity("ItemB", category), Is.EqualTo(expectedQuantity));
+        }
     }
 }
