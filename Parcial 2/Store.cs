@@ -14,7 +14,7 @@ namespace Parcial_2
         {
             Inventory = new Inventory();
 
-            if (firstItem != null && firstQuantity > 0)
+            if (firstItem != null && firstItem.IsValid() && firstQuantity > 0)
             {
                 Inventory.AddItem(firstItem, firstQuantity);
             }
