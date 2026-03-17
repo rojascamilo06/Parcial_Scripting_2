@@ -95,5 +95,22 @@ namespace Parcial_2
             Assert.That(store.GetQuantity("Orbe", firstCategory), Is.EqualTo(1));
             Assert.That(store.GetQuantity("Orbe", secondCategory), Is.EqualTo(2));
         }
+
+        private static IEnumerable<TestCaseData> CreacionDePersonajesData()
+        {
+            yield return new TestCaseData(100, 100).SetName("caso_3_personaje_oro_100");
+            yield return new TestCaseData(0, 0).SetName("caso_3_personaje_oro_0");
+            yield return new TestCaseData(-10, 0).SetName("caso_3_personaje_oro_negativo");
+        }
+
+        [TestCaseSource(nameof(CreacionDePersonajesData))]
+        public void caso_3_creacion_de_personajes(int inputGold, int expectedGold)
+        {
+            Player player = new Player(inputGold);
+
+            Assert.That(player.Gold, Is.EqualTo(expectedGold));
+            Assert.That(player.Inventory.EquipmentCount, Is.EqualTo(0));
+            Assert.That(player.Inventory.SupplyCount, Is.EqualTo(0));
+        }
     }
 }
