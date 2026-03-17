@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Parcial_2
 {
-    internal class Item
+    public class Item
     {
         private static string[] validCategories = { "Weapon", "Armor", "Accessory", "Supply" };
 
