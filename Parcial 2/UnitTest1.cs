@@ -112,5 +112,195 @@ namespace Parcial_2
             Assert.That(player.Inventory.EquipmentCount, Is.EqualTo(0));
             Assert.That(player.Inventory.SupplyCount, Is.EqualTo(0));
         }
+
+        private static IEnumerable<TestCaseData> CompraIndividualExitosaData()
+        {
+            yield return new TestCaseData("Weapon", 100, 1, 90, 2, 1).SetName("caso_4_compra_exitosa_weapon");
+            yield return new TestCaseData("Armor", 100, 1, 90, 2, 1).SetName("caso_4_compra_exitosa_armor");
+            yield return new TestCaseData("Accessory", 100, 1, 90, 2, 1).SetName("caso_4_compra_exitosa_accessory");
+            yield return new TestCaseData("Supply", 100, 1, 90, 2, 1).SetName("caso_4_compra_exitosa_supply");
+        }
+
+        [TestCaseSource(nameof(CompraIndividualExitosaData))]
+        public void caso_4_compra_individual_exitosa_actualiza_oro_e_inventario(string category, int initialGold, int quantityToBuy, int expectedGold, int expectedStoreQuantity, int expectedPlayerQuantity)
+        {
+            Item item = new Item("ItemA", 10, category);
+            Store store = new Store(item, 3);
+            Player player = new Player(initialGold);
+
+            bool result = store.BuyItem(player, "ItemA", category, quantityToBuy);
+
+            Assert.That(result, Is.True);
+            Assert.That(player.Gold, Is.EqualTo(expectedGold));
+            Assert.That(store.GetQuantity("ItemA", category), Is.EqualTo(expectedStoreQuantity));
+            Assert.That(player.Inventory.GetQuantity("ItemA", category), Is.EqualTo(expectedPlayerQuantity));
+        }
+
+        private static IEnumerable<TestCaseData> CompraFallaPorOroData()
+        {
+            yield return new TestCaseData(9, 2, 1).SetName("caso_4_compra_falla_oro_1");
+            yield return new TestCaseData(0, 2, 1).SetName("caso_4_compra_falla_oro_2");
+        }
+
+        [TestCaseSource(nameof(CompraFallaPorOroData))]
+        public void caso_4_compra_fallida_por_oro_no_modifica_estado(int playerGold, int initialStoreQuantity, int requestedQuantity)
+        {
+            Item sword = new Item("Espada", 10, "Weapon");
+            Store store = new Store(sword, initialStoreQuantity);
+            Player player = new Player(playerGold);
+
+            bool result = store.BuyItem(player, "Espada", "Weapon", requestedQuantity);
+
+            Assert.That(result, Is.False);
+            Assert.That(player.Gold, Is.EqualTo(playerGold));
+            Assert.That(store.GetQuantity("Espada", "Weapon"), Is.EqualTo(initialStoreQuantity));
+            Assert.That(player.Inventory.EquipmentCount, Is.EqualTo(0));
+            Assert.That(player.Inventory.SupplyCount, Is.EqualTo(0));
+        }
+
+        private static IEnumerable<TestCaseData> CompraFallaPorStockData()
+        {
+            yield return new TestCaseData(100, 1, 2).SetName("caso_4_compra_falla_stock_1");
+            yield return new TestCaseData(100, 1, 3).SetName("caso_4_compra_falla_stock_2");
+        }
+
+        [TestCaseSource(nameof(CompraFallaPorStockData))]
+        public void caso_4_compra_fallida_por_stock_no_modifica_estado(int playerGold, int initialStoreQuantity, int requestedQuantity)
+        {
+            Item sword = new Item("Espada", 10, "Weapon");
+            Store store = new Store(sword, initialStoreQuantity);
+            Player player = new Player(playerGold);
+
+            bool result = store.BuyItem(player, "Espada", "Weapon", requestedQuantity);
+
+            Assert.That(result, Is.False);
+            Assert.That(player.Gold, Is.EqualTo(playerGold));
+            Assert.That(store.GetQuantity("Espada", "Weapon"), Is.EqualTo(initialStoreQuantity));
+            Assert.That(player.Inventory.EquipmentCount, Is.EqualTo(0));
+            Assert.That(player.Inventory.SupplyCount, Is.EqualTo(0));
+        }
+
+        private static IEnumerable<TestCaseData> CompraEnTiendasDiferentesData()
+        {
+            yield return new TestCaseData(100, 70, 1, 1).SetName("caso_4_mismo_personaje_compra_en_dos_tiendas");
+        }
+
+        [TestCaseSource(nameof(CompraEnTiendasDiferentesData))]
+        public void caso_4_mismo_personaje_compra_en_diferentes_tiendas(int initialGold, int expectedGold, int expectedSwordQuantity, int expectedPotionQuantity)
+        {
+            Store weaponStore = new Store(new Item("Espada", 20, "Weapon"), 3);
+            Store supplyStore = new Store(new Item("Pocion", 10, "Supply"), 4);
+            Player player = new Player(initialGold);
+
+            bool firstResult = weaponStore.BuyItem(player, "Espada", "Weapon", 1);
+            bool secondResult = supplyStore.BuyItem(player, "Pocion", "Supply", 1);
+
+            Assert.That(firstResult, Is.True);
+            Assert.That(secondResult, Is.True);
+            Assert.That(player.Gold, Is.EqualTo(expectedGold));
+            Assert.That(player.Inventory.GetQuantity("Espada", "Weapon"), Is.EqualTo(expectedSwordQuantity));
+            Assert.That(player.Inventory.GetQuantity("Pocion", "Supply"), Is.EqualTo(expectedPotionQuantity));
+        }
+
+        private static IEnumerable<TestCaseData> CompraEnTiendasDiferentesConFallaData()
+        {
+            yield return new TestCaseData(25, 5, 1, 0).SetName("caso_4_una_compra_exitosa_y_otra_fallida");
+        }
+
+        [TestCaseSource(nameof(CompraEnTiendasDiferentesConFallaData))]
+        public void caso_4_mismo_personaje_compra_en_dos_tiendas_y_una_falla(int initialGold, int expectedGold, int expectedSwordQuantity, int expectedPotionQuantity)
+        {
+            Store weaponStore = new Store(new Item("Espada", 20, "Weapon"), 3);
+            Store supplyStore = new Store(new Item("Pocion", 10, "Supply"), 4);
+            Player player = new Player(initialGold);
+
+            bool firstResult = weaponStore.BuyItem(player, "Espada", "Weapon", 1);
+            bool secondResult = supplyStore.BuyItem(player, "Pocion", "Supply", 1);
+
+            Assert.That(firstResult, Is.True);
+            Assert.That(secondResult, Is.False);
+            Assert.That(player.Gold, Is.EqualTo(expectedGold));
+            Assert.That(player.Inventory.GetQuantity("Espada", "Weapon"), Is.EqualTo(expectedSwordQuantity));
+            Assert.That(player.Inventory.GetQuantity("Pocion", "Supply"), Is.EqualTo(expectedPotionQuantity));
+            Assert.That(weaponStore.GetQuantity("Espada", "Weapon"), Is.EqualTo(2));
+            Assert.That(supplyStore.GetQuantity("Pocion", "Supply"), Is.EqualTo(4));
+        }
+
+        private static IEnumerable<TestCaseData> CompraMultipleExitosaData()
+        {
+            yield return new TestCaseData(1, 2, 60, 1, 2).SetName("caso_4_compra_multiple_exitosa_1");
+            yield return new TestCaseData(2, 1, 50, 2, 1).SetName("caso_4_compra_multiple_exitosa_2");
+        }
+
+        [TestCaseSource(nameof(CompraMultipleExitosaData))]
+        public void caso_4_compra_multiple_exitosa_actualiza_oro_e_inventarios(int swordsToBuy, int potionsToBuy, int expectedGold, int expectedSwordQuantity, int expectedPotionQuantity)
+        {
+            Item sword = new Item("Espada", 20, "Weapon");
+            Item potion = new Item("Pocion", 10, "Supply");
+
+            Store store = new Store(sword, 5);
+            store.AddItem(potion, 5);
+
+            Player player = new Player(100);
+
+            List<string> names = new List<string> { "Espada", "Pocion" };
+            List<string> categories = new List<string> { "Weapon", "Supply" };
+            List<int> quantities = new List<int> { swordsToBuy, potionsToBuy };
+
+            bool result = store.BuyItems(player, names, categories, quantities);
+
+            Assert.That(result, Is.True);
+            Assert.That(player.Gold, Is.EqualTo(expectedGold));
+            Assert.That(store.GetQuantity("Espada", "Weapon"), Is.EqualTo(5 - swordsToBuy));
+            Assert.That(store.GetQuantity("Pocion", "Supply"), Is.EqualTo(5 - potionsToBuy));
+            Assert.That(player.Inventory.GetQuantity("Espada", "Weapon"), Is.EqualTo(expectedSwordQuantity));
+            Assert.That(player.Inventory.GetQuantity("Pocion", "Supply"), Is.EqualTo(expectedPotionQuantity));
+        }
+
+        private static IEnumerable<TestCaseData> CompraMultipleRepetidaData()
+        {
+            yield return new TestCaseData(2, 2).SetName("caso_4_compra_multiple_repetida_supera_stock_1");
+            yield return new TestCaseData(1, 3).SetName("caso_4_compra_multiple_repetida_supera_stock_2");
+        }
+
+        [TestCaseSource(nameof(CompraMultipleRepetidaData))]
+        public void caso_4_compra_multiple_valida_cantidad_acumulada_de_items_repetidos(int firstQuantity, int secondQuantity)
+        {
+            Item potion = new Item("Pocion", 5, "Supply");
+            Store store = new Store(potion, 3);
+            Player player = new Player(100);
+
+            List<string> names = new List<string> { "Pocion", "Pocion" };
+            List<string> categories = new List<string> { "Supply", "Supply" };
+            List<int> quantities = new List<int> { firstQuantity, secondQuantity };
+
+            bool result = store.BuyItems(player, names, categories, quantities);
+
+            Assert.That(result, Is.False);
+            Assert.That(player.Gold, Is.EqualTo(100));
+            Assert.That(store.GetQuantity("Pocion", "Supply"), Is.EqualTo(3));
+            Assert.That(player.Inventory.SupplyCount, Is.EqualTo(0));
+        }
+
+        private static IEnumerable<TestCaseData> ArticuloAgotadoData()
+        {
+            yield return new TestCaseData(1).SetName("caso_4_articulo_agotado_1");
+            yield return new TestCaseData(2).SetName("caso_4_articulo_agotado_2");
+        }
+
+        [TestCaseSource(nameof(ArticuloAgotadoData))]
+        public void caso_4_si_un_articulo_se_agota_ya_no_puede_comprarse(int quantity)
+        {
+            Item potion = new Item("Pocion", 5, "Supply");
+            Store store = new Store(potion, quantity);
+            Player player = new Player(100);
+
+            bool firstResult = store.BuyItem(player, "Pocion", "Supply", quantity);
+            bool secondResult = store.BuyItem(player, "Pocion", "Supply", 1);
+
+            Assert.That(firstResult, Is.True);
+            Assert.That(secondResult, Is.False);
+            Assert.That(store.GetQuantity("Pocion", "Supply"), Is.EqualTo(0));
+        }
     }
 }
