@@ -16,39 +16,26 @@ namespace Parcial_2
 
         public Item(string name, int price, string category)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("el nombre del articulo no puede estar vacio");
-            }
-
-            if (price <= 0)
-            {
-                throw new ArgumentException("el precio del articulo debe ser positivo");
-            }
-
-            if (!IsValidCategory(category))
-            {
-                throw new ArgumentException("la categoria no es valida");
-            }
-
-            Name = name.Trim();
+            Name = name == null ? "" : name.Trim();
             Price = price;
-            Category = category.Trim();
+            Category = category == null ? "" : category.Trim();
         }
 
-        private bool IsValidCategory(string category)
+        public bool IsValid()
         {
-            if (string.IsNullOrWhiteSpace(category))
+            if (string.IsNullOrWhiteSpace(Name))
             {
                 return false;
             }
 
-            string cleanCategory = category.Trim();
-            int i;
-
-            for (i = 0; i < validCategories.Length; i++)
+            if (Price <= 0)
             {
-                if (validCategories[i] == cleanCategory)
+                return false;
+            }
+
+            for (int i = 0; i < validCategories.Length; i++)
+            {
+                if (validCategories[i] == Category)
                 {
                     return true;
                 }
